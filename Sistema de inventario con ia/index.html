@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Gestión de Inventarios Empresarial</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <!-- ===================== PANTALLA DE LOGIN/SELECCIÓN DE ROLES ===================== -->
+    <div id="loginContainer" class="container">
+      <div class="login-container">
+        <h1 class="login-title">
+          Sistema de Gestión de Inventarios Empresarial
+        </h1>
+        <div class="role-selector">
+          <div class="role-card admin" onclick="initializeApp('admin')">
+            <h2>🔐 Administrador</h2>
+            <p>
+              Acceso completo a todas las funciones del sistema, incluyendo
+              gestión de productos, categorías, estadísticas y reportes.
+            </p>
+          </div>
+          <div class="role-card empleado" onclick="initializeApp('empleado')">
+            <h2>👤 Empleado</h2>
+            <p>
+              Acceso limitado al sistema. Puede visualizar inventario y
+              registrar movimientos de entrada y salida.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== APLICACIÓN PRINCIPAL ===================== -->
+    <div id="appContainer" class="container main-content">
+      <!-- HEADER -->
+      <div class="header">
+        <h1>📦 Sistema de Gestión de Inventarios</h1>
+        <div class="header-info">
+          <div class="role-display">
+            <span class="label">Rol:</span>
+            <span class="value" id="roleDisplay">-</span>
+          </div>
+          <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+      </div>
+
+      <!-- ALERTAS -->
+      <div id="alertContainer" style="padding: 20px 30px 0 30px">
+        <div id="successAlert" class="alert alert-success"></div>
+        <div id="errorAlert" class="alert alert-error"></div>
+        <div id="warningAlert" class="alert alert-warning"></div>
+      </div>
+
+      <!-- CONTENIDO PRINCIPAL -->
+      <div style="padding: 0 30px 30px 30px">
+        <!-- NAVEGACIÓN DE TABS -->
+        <div class="nav-tabs" id="navTabs"></div>
+
+        <!-- SECCIÓN: DASHBOARD -->
+        <div id="dashboardSection" class="section active">
+          <div class="stats-grid" id="statsGrid"></div>
+          <div id="dashboardContent"></div>
+        </div>
+
+        <!-- SECCIÓN: PRODUCTOS (ADMIN) -->
+        <div id="productosSection" class="section">
+          <div class="form-container">
+            <h2>Formulario de Productos</h2>
+            <div class="form-group">
+              <div class="form-field" style="flex: 2">
+                <label>Nombre del Producto</label>
+                <input
+                  type="text"
+                  id="productName"
+                  placeholder="Ej: Laptop Dell"
+                />
+              </div>
+              <div class="form-field" style="flex: 1">
+                <label>Categoría</label>
+                <select id="productCategory">
+                  <option value="">-- Seleccionar --</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="form-field">
+                <label>Precio Unitario ($)</label>
+                <input
+                  type="number"
+                  id="productPrice"
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+              <div class="form-field">
+                <label>Stock Inicial</label>
+                <input
+                  type="number"
+                  id="productStock"
+                  placeholder="0"
+                  step="1"
+                  min="0"
+                />
+              </div>
+              <button
+                class="btn btn-primary"
+                onclick="addProduct()"
+                style="align-self: flex-end"
+              >
+                Agregar Producto
+              </button>
+            </div>
+          </div>
+
+          <h2 style="margin-bottom: 20px">Inventario de Productos</h2>
+          <div class="table-container" id="productTableContainer">
+            <table id="productTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="productTableBody"></tbody>
+            </table>
+          </div>
+          <div id="productEmptyState" class="empty-state">
+            <p>No hay productos registrados aún.</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: CATEGORÍAS (ADMIN) -->
+        <div id="categoriasSection" class="section">
+          <div class="form-container">
+            <h2>Crear Nueva Categoría</h2>
+            <div class="form-group">
+              <div class="form-field" style="flex: 1">
+                <label>Nombre de la Categoría</label>
+                <input
+                  type="text"
+                  id="categoryName"
+                  placeholder="Ej: Electrónica"
+                />
+              </div>
+              <button
+                class="btn btn-primary"
+                onclick="addCategory()"
+                style="align-self: flex-end"
+              >
+                Crear Categoría
+              </button>
+            </div>
+          </div>
+
+          <h2 style="margin-bottom: 20px">Categorías Existentes</h2>
+          <div class="table-container" id="categoryTableContainer">
+            <table id="categoryTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Productos</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="categoryTableBody"></tbody>
+            </table>
+          </div>
+          <div id="categoryEmptyState" class="empty-state">
+            <p>No hay categorías creadas aún.</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: MOVIMIENTOS DE INVENTARIO -->
+        <div id="movimientosSection" class="section">
+          <div class="form-container">
+            <h2>Registrar Movimiento de Inventario</h2>
+            <div class="form-group">
+              <div class="form-field" style="flex: 1">
+                <label>Producto</label>
+                <select id="movementProduct">
+                  <option value="">-- Seleccionar Producto --</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Tipo de Movimiento</label>
+                <select id="movementType">
+                  <option value="entrada">Entrada (Compra)</option>
+                  <option value="salida">Salida (Venta)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="form-field">
+                <label>Cantidad</label>
+                <input
+                  type="number"
+                  id="movementQuantity"
+                  placeholder="0"
+                  step="1"
+                  min="1"
+                />
+              </div>
+              <button
+                class="btn btn-success"
+                onclick="addMovement()"
+                style="align-self: flex-end"
+              >
+                Registrar Movimiento
+              </button>
+            </div>
+          </div>
+
+          <h2 style="margin-bottom: 20px">Historial de Movimientos</h2>
+          <div class="table-container" id="movementTableContainer">
+            <table id="movementTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Producto</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="movementTableBody"></tbody>
+            </table>
+          </div>
+          <div id="movementEmptyState" class="empty-state">
+            <p>No hay movimientos registrados aún.</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: ESTADÍSTICAS (ADMIN) -->
+        <div id="estadisticasSection" class="section">
+          <h2 style="margin-bottom: 20px">Estadísticas del Inventario</h2>
+          <div id="estadisticasContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE EDICIÓN DE PRODUCTO -->
+    <div id="editProductModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>Editar Producto</span>
+          <button class="modal-close" onclick="closeModal('editProductModal')">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-field mb-20">
+            <label>Nombre del Producto</label>
+            <input type="text" id="editProductName" />
+          </div>
+          <div class="form-field mb-20">
+            <label>Categoría</label>
+            <select id="editProductCategory"></select>
+          </div>
+          <div class="form-field mb-20">
+            <label>Precio Unitario ($)</label>
+            <input type="number" id="editProductPrice" step="0.01" min="0" />
+          </div>
+          <div class="form-field mb-20">
+            <label>Stock</label>
+            <input type="number" id="editProductStock" step="1" min="0" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('editProductModal')"
+          >
+            Cancelar
+          </button>
+          <button class="btn btn-primary" onclick="updateProduct()">
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+    <div id="deleteConfirmModal" class="modal">
+      <div class="modal-content" style="max-width: 350px">
+        <div class="modal-header">
+          <span>Confirmar Eliminación</span>
+          <button
+            class="modal-close"
+            onclick="closeModal('deleteConfirmModal')"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="deleteMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="closeModal('deleteConfirmModal')"
+          >
+            Cancelar
+          </button>
+          <button class="btn btn-danger" onclick="confirmDelete()">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>

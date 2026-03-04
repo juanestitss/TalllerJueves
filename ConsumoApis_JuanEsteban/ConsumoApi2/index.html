@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta Climática</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h1>Sistema de Información Climática</h1>
+            <p>Área Metropolitana</p>
+        </div>
+
+        <div class="panel-body">
+
+            <!-- Botones de ciudades por defecto -->
+            <div style="margin-bottom:15px;">
+                <button class="city-btn" data-city="Medellín">Medellín</button>
+                <button class="city-btn" data-city="Bogotá">Bogotá</button>
+                <button class="city-btn" data-city="Cali">Cali</button>
+                <button class="city-btn" data-city="Cartagena">Cartagena</button>
+            </div>
+
+            <input type="text" id="cityInput" placeholder="Ingrese una ciudad">
+            <button id="btnSearch">Consultar</button>
+
+            <div id="result" class="display">
+                Estado: Sistema operativo
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
